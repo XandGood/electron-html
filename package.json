@@ -1,0 +1,14 @@
+{
+  "name": "electron",
+  "version": "1.0.0",
+  "description": "Test vscode",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "XAG",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^38.0.0"
+  }
+}

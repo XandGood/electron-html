@@ -1,0 +1,29 @@
+*{ margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+html { font-size: 12px; }
+html,body{ height: 100%;}
+body{display: flex; flex: 1;}
+aside{width: 20rem;}
+
+
+@media(prefers-color-scheme: dark) {
+     body { 
+        background-color: #333; 
+        color: #e0e0e0;  
+    }
+    aside{
+        background-color: #2a2a2a;  
+        color: #e0e0e0;
+    }
+
+}
+@media (prefers-color-scheme: light) {
+     body { 
+        background-color: #fff; 
+        color: #333333;  
+    }
+    aside{
+        background-color: #efefef;  
+        color: #333333;
+    }
+}
+ 
