@@ -1,7 +1,9 @@
-const {app, BrowserWindow,ipcMain,nativeTheme, Menu ,Tray ,nativeImage} = require('electron');
+const {app, BrowserWindow,ipcMain,nativeTheme, Menu ,Tray ,nativeImage, Notification,globalShortcut} = require('electron');
 const path = require('path');
 
  let mainWindow = null;
+ const icon = nativeImage.createFromPath("src/assets/icon.png")
+
 //创建窗口
 function createWindow() {
     // 创建浏览器窗口实例，设置窗口大小和偏好配置
@@ -86,18 +88,41 @@ function createTray() {
         }
     ];
     const menu = Menu.buildFromTemplate(template);
-    const icon = nativeImage.createFromPath("src/assets/icon.png")
     const tray = new Tray(icon);
     tray.setToolTip("简介：仓库管理系统");
     tray.setTitle("仓库管理系统")
     tray.setContextMenu(menu);
 }
+
+// 检查更新
+function updateCheck() {
+    const options = {
+        icon: icon,
+        title: '温馨提示',
+        body: '有新版本可用，是否更新？'
+    }
+    const notify = new Notification(options)
+    notify.on('click', () => {
+        console.log('通知被点击了')
+    })
+    notify.show();
+}
+
+//注册快捷键
+function registerShortcut() {
+    globalShortcut.register('CommandOrControl+Shift+i', () => { 
+        mainWindow.webContents.openDevTools()
+    })  
+}
+
 //启动应用
 app.on('ready', () => {
     createTray();
     createMenu();
+    registerShortcut();
     createWindow();
-    
+    // updateCheck();
+
     app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
@@ -106,6 +131,7 @@ app.on('ready', () => {
 })
 //关闭应用
 app.on('window-all-closed', () => {
+    globalShortcut.unregisterAll();
     if (process.platform !== 'darwin') {
         app.quit();
     }

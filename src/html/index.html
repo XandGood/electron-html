@@ -12,26 +12,60 @@
 </head>
 <body>
     <aside>侧边栏</aside>
-    <main>正文</main>
-    <script>
-        const aside = document.querySelector('aside');
-        const main = document.querySelector('main');
-        aside.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
-            const tempalte =[
-                {label: '新增分类'},
-                {label: '删除分类'}
-            ]
-            window.ipcRenderer.send('menu:contextmenu',tempalte);
-        });
-        main.addEventListener('contextmenu', (event) => {
-            event.preventDefault();
-            const tempalte =[
-                {label: '新增数据'},
-                {label: '删除数据'}
-            ]
-            window.ipcRenderer.send('menu:contextmenu',tempalte);
-        });
-    </script>
+    <main>
+        <h1>主内容</h1>
+        <button id="update">检查更新</button>
+
+    </main>
+
+
+<script>
+    //快捷键
+    window.onkeydown = (event) => {
+        event.preventDefault();
+        const {key,ctrlKey,shiftKey,altKey} = event;
+        if(!ctrlKey|| shiftKey || altKey) {return};
+        if(key === 's'&& ctrlKey&& shiftKey) {
+            console.log('保存')
+            return;
+        }
+    }
+</script>
+<script>
+    //弹窗
+    const btn = document.getElementById('update');
+    btn.addEventListener('click', () => {
+        const options = {
+            icon: 'src/assets/icon.png',
+            title: '更新提示',
+            Body: '发现新版本，是否更新？'
+        }
+        const notify = new Notification(options.title, options);
+            notify.onclick = () => {
+            console.log('点击了通知')
+            }
+    });
+</script>
+<script>
+    //右键菜单
+    const aside = document.querySelector('aside');
+    const main = document.querySelector('main');
+    aside.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+        const tempalte =[
+            {label: '新增分类'},
+            {label: '删除分类'}
+        ]
+        window.ipcRenderer.send('menu:contextmenu',tempalte);
+    });
+    main.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+        const tempalte =[
+            {label: '新增数据'},
+            {label: '删除数据'}
+        ]
+        window.ipcRenderer.send('menu:contextmenu',tempalte);
+    });
+</script>
 </body>
 </html>
