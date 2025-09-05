@@ -3,21 +3,42 @@ const path = require('path');
 const fs = require('fs');
 
  let mainWindow = null;
+ let loadingWindow = null;
  const icon = nativeImage.createFromPath("src/assets/icon.png")
+ const iconOffline = nativeImage.createFromPath("src/assets/icon-offline.png")
 
+//创建窗口公共方法
+function createWindowCommon(url, options={}) {
+    const defaultOptions = {
+        width: 800,
+        height: 600,
+        webPreferences: {
+            nodeIntegration: true,
+            preload: path.join(__dirname, 'preload.js')
+        }
+   }
+   options = Object.assign(defaultOptions, options);
+   const win = new BrowserWindow(options);
+   win.loadFile(path.join(__dirname, url));
+   return win;
+}
+//创建加载窗口
+function createLoadingWindow() {
+    // 创建加载窗口实例，设置窗口大小和偏好配置
+    const options = {
+        width: 350,    
+        height: 250,   
+        frame: false,  
+    };
+    loadingWindow=createWindowCommon('/html/loading.html',options);
+}
 //创建窗口
 function createWindow() {
-    // 创建浏览器窗口实例，设置窗口大小和偏好配置
-        mainWindow = new BrowserWindow({
-        width: 800,    // 设置窗口宽度为800像素
-        height: 600,   // 设置窗口高度为600像素
-        webPreferences: {
-            nodeIntegration: true,  // 启用Node.js集成，使渲染进程可以访问Node.js API
-            preload: path.join(__dirname, 'preload.js')  // 设置预加载脚本路径，用于在渲染进程加载前执行
-        }
-    });
+        const options ={
+        show: false,  
+    };
     // 加载应用的主HTML页面
-    mainWindow.loadFile('./src/html/index.html');
+    mainWindow= createWindowCommon('/html/index.html',options);
     mainWindow.on('close', (event) =>{
         event.preventDefault();
         mainWindow.hide();
@@ -94,6 +115,25 @@ function createTray() {
     tray.setTitle("仓库管理系统")
     tray.setContextMenu(menu);
 }
+//切换托盘图标
+function flashTray() {
+    let flag = true;
+    setInterval(() => {
+        if(flag){
+            tray.setImage(iconOffline);
+        }else{
+            tray.setImage(icon);
+        }
+        flag = !flag;
+    }, 1000)
+    //图表闪烁
+    // setInterval(() => {
+    //     if(flag){
+    //         tray.setImage(flag? icon : nativeImage.createEmpty);
+    //     }
+    //     flag = !flag;
+    // }, 1000)
+}
 
 // 检查更新
 function updateCheck() {
@@ -118,6 +158,7 @@ function registerShortcut() {
 
 //启动应用
 app.on('ready', () => {
+    createLoadingWindow();
     createTray();
     createMenu();
     registerShortcut();
@@ -159,6 +200,9 @@ ipcMain.handle('dialog:messageBox', async (event, options) => {
 //     const win = BrowserWindow.fromWebContents(event.sender);
 //     return dialog.showErrorBox(win, options);
 // })
+
+
+
 //文件处理
 ipcMain.handle('dialog:openFile', async (event, options) => {
     const win = BrowserWindow.fromWebContents(event.sender);
@@ -168,11 +212,28 @@ ipcMain.handle('dialog:saveFile', async (event, options) => {
     const win = BrowserWindow.fromWebContents(event.sender);
     return dialog.showSaveDialog(win, options);
 })
-
 ipcMain.handle('fs:readFile', async (event, filePath) => {
     return await fs.promises.readFile(filePath, 'utf-8');
 })
 ipcMain.handle('fs:writeFile', async (event, { filePath, data }) => {
     return await fs.promises.writeFile(filePath,data, 'utf-8');
 })
+//网络状态
+ipcMain.on("network:status", (event, status) => {
+    tray.setImage(status? icon : iconOffline);
+})
+//加载完成
+ipcMain.on("loading:done", (event) => {
+    loadingWindow.close();
+    mainWindow.show();
+})
+
+ipcMain.on("window:open", (event,settings) => {
+    const parentWindow = BrowserWindow.fromWebContents(event.sender);
+    const {url , options} = settings;
+    options.parent = parentWindow;
+    const win = createWindowCommon(url, options);
+})
+
+
 

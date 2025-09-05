@@ -11,7 +11,15 @@
     </style>
 </head>
 <body>
-    <aside>侧边栏</aside>
+    <aside>
+        <h1>侧边栏</h1>
+        <div id="online-status">
+            <h2>网络状态:<span id="network-status"></span></h2>
+        </div>
+        <div>
+            <button id="add">新增</button>
+        </div>
+    </aside>
     <main>
         <h1>主内容</h1>
         <button id="update">检查更新</button>
@@ -27,6 +35,40 @@
             </footer>
         </div>
     </main>
+
+
+
+<script>
+    setTimeout(() => {
+      window.ipcRenderer.send("loading:done")  
+    },)
+    const addBtn = document.getElementById('add');
+    addBtn.addEventListener('click', () => {
+        const settings = {
+            url:"add.html",
+            options: {
+                width: 400,
+                height: 300,
+                moddel: true
+            }
+        }
+        window.ipcRenderer.send('window:open',settings);
+    });
+
+
+</script>
+<script>
+    //网络检测
+    function refreshNetworkStatus() {
+        const networkStatus = document.getElementById('network-status');
+        networkStatus.textContent = navigator.onLine ? '在线' : '离线';
+        window.ipcRenderer.send('network-status', navigator.onLine);
+    }
+    refreshNetworkStatus();
+    window.addEventListener('online', refreshNetworkStatus);
+    window.addEventListener('offline', refreshNetworkStatus);
+</script>
+</script>
 <script>
     //文件处理
     const btnOpen = document.getElementById('btn-open');
