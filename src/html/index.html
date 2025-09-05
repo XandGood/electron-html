@@ -15,10 +15,71 @@
     <main>
         <h1>主内容</h1>
         <button id="update">检查更新</button>
-
+        <button id="message">消息提示</button>
+        <div>
+            <header id="btn-open">
+                <button>打开文件</button>
+            </header>
+            <label for="content"></label>
+            <textarea id="content" rows="10" title="内容"></textarea>
+            <footer id="btn-save">
+                <button>保存文件</button>
+            </footer>
+        </div>
     </main>
-
-
+<script>
+    //文件处理
+    const btnOpen = document.getElementById('btn-open');
+    const btnSave = document.getElementById('btn-save');
+    const textarea = document.getElementById('content');
+    btnOpen.addEventListener('click', async () => {
+        const options = {
+            title: '打开文件',
+            properties: ['openFile'],
+            filters: [
+                {name: '文本文件', extensions: ['txt']},
+                {name: '所有文件', extensions: ['*']}
+            ]
+        }
+        const result = await window.ipcRenderer.invoke('dialog:openFile',options);
+        if(result.canceled) {return};
+        const filePath = result.filePaths[0];
+        const content = await window.ipcRenderer.invoke('fs:readFile', filePath);
+        textarea.value = content;
+    });
+    btnSave.addEventListener('click', async () => {
+        const options = {
+            title: '保存文件',
+            buttonLabel: '保存',
+            filters: [
+                {name: '文本文件', extensions: ['txt']},
+                {name: '所有文件', extensions: ['*']}
+            ]
+        }
+        const result = await window.ipcRenderer.invoke('dialog:saveFile',options);
+        if(result.canceled) {return};
+        const filePath = result.filePath;
+        const content = textarea.value;
+        await window.ipcRenderer.invoke('fs:writeFile', {filePath:filePath, data:content});
+        
+    });
+    
+</script>
+<script>
+    //消息提示
+    const message = document.getElementById('message');
+    message.addEventListener('click', async () => {
+        const options = {
+            type: 'info',
+            title: '消息提示',
+            body: '这是一条消息提示',
+            detail: '这是一条消息',
+            checkboxLabel: '不再提示',
+            buttons: ['确定', '取消']
+        };
+        const answer = await window.ipcRenderer.invoke('dialog:messageBox', options);
+    });
+</script>
 <script>
     //快捷键
     window.onkeydown = (event) => {

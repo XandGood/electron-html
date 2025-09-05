@@ -1,5 +1,6 @@
-const {app, BrowserWindow,ipcMain,nativeTheme, Menu ,Tray ,nativeImage, Notification,globalShortcut} = require('electron');
+const {app, BrowserWindow,ipcMain,nativeTheme, Menu ,Tray ,nativeImage, Notification,globalShortcut, dialog} = require('electron');
 const path = require('path');
+const fs = require('fs');
 
  let mainWindow = null;
  const icon = nativeImage.createFromPath("src/assets/icon.png")
@@ -148,6 +149,30 @@ ipcMain.on("menu:contextmenu",(event,template)=>{
     const win = BrowserWindow.fromWebContents(event.sender);
     menu.popup(win);
 })
+//消息弹窗
+ipcMain.handle('dialog:messageBox', async (event, options) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    return dialog.showMessageBox(win, options);
+})
+//错误提示
+// ipcMain.on('dialog:errorBox', async (event, options) => {
+//     const win = BrowserWindow.fromWebContents(event.sender);
+//     return dialog.showErrorBox(win, options);
+// })
+//文件处理
+ipcMain.handle('dialog:openFile', async (event, options) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    return dialog.showOpenDialog(win, options);
+})
+ipcMain.handle('dialog:saveFile', async (event, options) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    return dialog.showSaveDialog(win, options);
+})
 
-
+ipcMain.handle('fs:readFile', async (event, filePath) => {
+    return await fs.promises.readFile(filePath, 'utf-8');
+})
+ipcMain.handle('fs:writeFile', async (event, { filePath, data }) => {
+    return await fs.promises.writeFile(filePath,data, 'utf-8');
+})
 
